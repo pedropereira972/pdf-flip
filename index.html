@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Manual Flipbook</title>
+
+<style>
+body{
+    background:#222;
+    margin:0;
+}
+
+#flipbook{
+    width:1000px;
+    height:700px;
+    margin:40px auto;
+}
+
+.page{
+    background:white;
+}
+</style>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="js/turn.js"></script>
+
+</head>
+
+<body>
+
+<div id="flipbook"></div>
+
+<script type="module">
+
+import * as pdfjsLib from './js/pdf.mjs';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+    './js/pdf.worker.mjs';
+
+const url = "manual.pdf?v=" + Date.now();
+
+const BOOK_WIDTH = 1000;
+const BOOK_HEIGHT = 700;
+
+const container =
+    document.getElementById("flipbook");
+
+const pdf =
+    await pdfjsLib.getDocument(url).promise;
+
+// High-DPI factor
+const DPR = window.devicePixelRatio || 1;
+
+for(let i=1;i<=pdf.numPages;i++){
+
+    const page = await pdf.getPage(i);
+
+    const viewport =
+        page.getViewport({ scale: 1 });
+
+    const targetWidth = BOOK_WIDTH / 2;
+    const targetHeight = BOOK_HEIGHT;
+
+    const baseScale = Math.min(
+        targetWidth / viewport.width,
+        targetHeight / viewport.height
+    );
+
+    // ✅ render sharper internally
+    const renderScale = baseScale * DPR;
+
+    const scaledViewport =
+        page.getViewport({ scale: renderScale });
+
+    const canvas =
+        document.createElement("canvas");
+
+    const context =
+        canvas.getContext("2d");
+
+    // REAL resolution
+    canvas.width = scaledViewport.width;
+    canvas.height = scaledViewport.height;
+
+    // DISPLAY size (important)
+    canvas.style.width =
+        (scaledViewport.width / DPR) + "px";
+
+    canvas.style.height =
+        (scaledViewport.height / DPR) + "px";
+
+    const pageDiv =
+        document.createElement("div");
+
+    pageDiv.className="page";
+    pageDiv.appendChild(canvas);
+
+    container.appendChild(pageDiv);
+
+    await page.render({
+        canvasContext: context,
+        viewport: scaledViewport
+    }).promise;
+}
+
+$("#flipbook").turn({
+    width: BOOK_WIDTH,
+    height: BOOK_HEIGHT,
+    autoCenter: true
+});
+
+</script>
+
+</body>
+</html>
