@@ -22,7 +22,7 @@ body{
 </style>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="js/turn.js"></script>
+<script src="./turn.js"></script>
 
 </head>
 
@@ -32,10 +32,10 @@ body{
 
 <script type="module">
 
-import * as pdfjsLib from './js/pdf.mjs';
+import * as pdfjsLib from './pdf.mjs';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc =
-    './js/pdf.worker.mjs';
+    './pdf.worker.mjs';
 
 const url = "manual.pdf?v=" + Date.now();
 
@@ -112,4 +112,5 @@ $("#flipbook").turn({
 </script>
 
 </body>
+
 </html>
